@@ -1,3 +1,4 @@
+import base64
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic._internal")
 
@@ -116,16 +117,14 @@ with st.sidebar:
     if files["sb3"]:
         st.markdown("**Compiled projects (.sb3)**")
         for sb3 in files["sb3"]:
-            col1, col2 = st.columns([3, 1])
-            col1.markdown(f"`{sb3.name}`")
-            col2.download_button(
-                label="⬇",
-                data=sb3.read_bytes(),
-                file_name=sb3.name,
-                mime="application/zip",
-                key=f"dl_{sb3.name}",
-                help=f"Download {sb3.name}",
+            b64 = base64.b64encode(sb3.read_bytes()).decode()
+            href = (
+                f'<a href="data:application/zip;base64,{b64}" '
+                f'download="{sb3.name}" '
+                f'style="font-size:0.85rem;text-decoration:none;">'
+                f'⬇ {sb3.name}</a>'
             )
+            st.markdown(href, unsafe_allow_html=True)
     else:
         st.info("No .sb3 files yet. Ask the agent to create a project!")
 
@@ -197,7 +196,7 @@ if user_input:
 
     st.session_state.messages.append({"role": "assistant", "content": collected})
 
-    # Check for new .sb3 files and show download buttons inline
+    # Check for new .sb3 files and show inline download links (data-URI, no rerun)
     new_files = get_output_files()
     current_sb3 = {p.name for p in new_files["sb3"]}
     new_sb3 = current_sb3 - st.session_state.last_output_snapshot
@@ -205,13 +204,11 @@ if user_input:
         st.session_state.last_output_snapshot = current_sb3
         for name in sorted(new_sb3):
             path = OUTPUT_DIR / name
-            st.success(f"✅ New project ready: `{name}`")
-            st.download_button(
-                label=f"⬇ Download {name}",
-                data=path.read_bytes(),
-                file_name=name,
-                mime="application/zip",
-                key=f"inline_dl_{name}",
+            b64 = base64.b64encode(path.read_bytes()).decode()
+            href = (
+                f'<a href="data:application/zip;base64,{b64}" '
+                f'download="{name}" style="text-decoration:none;">'
+                f'⬇ Download <strong>{name}</strong></a>'
             )
-
-    st.rerun()
+            st.success(f"✅ New project ready: `{name}`")
+            st.markdown(href, unsafe_allow_html=True)
