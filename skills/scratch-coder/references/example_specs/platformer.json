@@ -1,0 +1,149 @@
+{
+  "name": "Platformer Game",
+  "description": "A basic side-scrolling platformer with player movement, platforms, and a goal.",
+  "extensions": ["pen"],
+  "stage": {
+    "variables": {
+      "`jEk@4|i[#Fk?(8x)AV.-score": ["Score", 0],
+      "`jEk@4|i[#Fk?(8x)AV.-lives": ["Lives", 3],
+      "`jEk@4|i[#Fk?(8x)AV.-level": ["Level", 1]
+    },
+    "broadcasts": {
+      "`jEk@4|i[#Fk?(8x)AV.-hit": "hit",
+      "`jEk@4|i[#Fk?(8x)AV.-collect": "collect",
+      "`jEk@4|i[#Fk?(8x)AV.-gameover": "game_over"
+    },
+    "backdrops": [
+      {
+        "assetId": "cd21514d0531fdffb22204e0ec5ed84a",
+        "name": "backdrop1",
+        "md5ext": "cd21514d0531fdffb22204e0ec5ed84a.svg",
+        "dataFormat": "svg",
+        "rotationCenterX": 240,
+        "rotationY": 180
+      }
+    ]
+  },
+  "sprites": [
+    {
+      "name": "Player",
+      "costume": "cat",
+      "x": -200,
+      "y": -100,
+      "direction": 90,
+      "rotationStyle": "left-right",
+      "variables": {},
+      "blocks": {
+        "BLOCK_A": {
+          "opcode": "event_whenflagclicked",
+          "next": "BLOCK_B",
+          "parent": null,
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": true,
+          "x": 0,
+          "y": 0
+        },
+        "BLOCK_B": {
+          "opcode": "motion_setx",
+          "next": "BLOCK_C",
+          "parent": "BLOCK_A",
+          "inputs": {
+            "X": [4, -200]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "BLOCK_C": {
+          "opcode": "motion_sety",
+          "next": "BLOCK_D",
+          "parent": "BLOCK_B",
+          "inputs": {
+            "Y": [4, -100]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "BLOCK_D": {
+          "opcode": "control_forever",
+          "next": null,
+          "parent": "BLOCK_C",
+          "inputs": {
+            "SUBSTACK": [2, "BLOCK_E"]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "BLOCK_E": {
+          "opcode": "control_if",
+          "next": null,
+          "parent": "BLOCK_D",
+          "inputs": {
+            "CONDITION": [2, "BLOCK_J"],
+            "SUBSTACK": [2, "BLOCK_F"]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "BLOCK_F": {
+          "opcode": "motion_changeyby",
+          "next": "BLOCK_G",
+          "parent": "BLOCK_E",
+          "inputs": {
+            "DY": [4, -5]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "BLOCK_G": {
+          "opcode": "control_wait",
+          "next": "BLOCK_H",
+          "parent": "BLOCK_F",
+          "inputs": {
+            "DURATION": [4, 0.1]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "BLOCK_H": {
+          "opcode": "motion_changeyby",
+          "next": null,
+          "parent": "BLOCK_G",
+          "inputs": {
+            "DY": [4, 5]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "BLOCK_J": {
+          "opcode": "sensing_keypressed",
+          "next": null,
+          "parent": "BLOCK_E",
+          "inputs": {},
+          "fields": {
+            "KEY_OPTION": ["up arrow", null]
+          },
+          "shadow": false,
+          "topLevel": false
+        }
+      }
+    },
+    {
+      "name": "Platform",
+      "costume": "empty",
+      "x": 0,
+      "y": -120,
+      "direction": 90,
+      "rotationStyle": "don't rotate",
+      "blocks": {}
+    }
+  ]
+}

@@ -1,0 +1,219 @@
+{
+  "name": "Drawing Program",
+  "description": "An interactive drawing program with pen colors and size controls.",
+  "extensions": ["pen"],
+  "stage": {
+    "variables": {
+      "`jEk@4|i[#Fk?(8x)AV.-pen_color": ["Pen Color", "#000000"],
+      "`jEk@4|i[#Fk?(8x)AV.-pen_size": ["Pen Size", 5]
+    },
+    "broadcasts": {}
+  },
+  "sprites": [
+    {
+      "name": "Pen",
+      "costume": "empty",
+      "x": 0,
+      "y": 0,
+      "direction": 90,
+      "rotationStyle": "don't rotate",
+      "visible": false,
+      "blocks": {
+        "BLOCK_A": {
+          "opcode": "event_whenflagclicked",
+          "next": "BLOCK_B",
+          "parent": null,
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": true,
+          "x": 0,
+          "y": 0
+        },
+        "BLOCK_B": {
+          "opcode": "pen_clear",
+          "next": "BLOCK_C",
+          "parent": "BLOCK_A",
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "BLOCK_C": {
+          "opcode": "control_forever",
+          "next": null,
+          "parent": "BLOCK_B",
+          "inputs": {
+            "SUBSTACK": [2, "BLOCK_D"]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "BLOCK_D": {
+          "opcode": "control_if",
+          "next": "BLOCK_E",
+          "parent": "BLOCK_C",
+          "inputs": {
+            "CONDITION": [2, "BLOCK_G"],
+            "SUBSTACK": [2, "BLOCK_F"]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "BLOCK_E": {
+          "opcode": "motion_gotoxy",
+          "next": "BLOCK_H",
+          "parent": "BLOCK_D",
+          "inputs": {
+            "X": [2, "BLOCK_I"],
+            "Y": [2, "BLOCK_J"]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "BLOCK_F": {
+          "opcode": "pen_pendown",
+          "next": null,
+          "parent": "BLOCK_D",
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "BLOCK_G": {
+          "opcode": "sensing_mousedown",
+          "next": null,
+          "parent": "BLOCK_D",
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "BLOCK_H": {
+          "opcode": "pen_penup",
+          "next": null,
+          "parent": "BLOCK_E",
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "BLOCK_I": {
+          "opcode": "sensing_mousex",
+          "next": null,
+          "parent": "BLOCK_E",
+          "inputs": {},
+          "fields": {},
+          "shadow": true,
+          "topLevel": false
+        },
+        "BLOCK_J": {
+          "opcode": "sensing_mousey",
+          "next": null,
+          "parent": "BLOCK_E",
+          "inputs": {},
+          "fields": {},
+          "shadow": true,
+          "topLevel": false
+        }
+      }
+    },
+    {
+      "name": "Red Button",
+      "costume": "empty",
+      "x": -200,
+      "y": 150,
+      "direction": 90,
+      "rotationStyle": "don't rotate",
+      "blocks": {
+        "BLOCK_A": {
+          "opcode": "event_whenthisspriteclicked",
+          "next": "BLOCK_B",
+          "parent": null,
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": true,
+          "x": 0,
+          "y": 0
+        },
+        "BLOCK_B": {
+          "opcode": "pen_setPenColorToColor",
+          "next": null,
+          "parent": "BLOCK_A",
+          "inputs": {
+            "COLOR": [9, "#ff0000"]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        }
+      }
+    },
+    {
+      "name": "Blue Button",
+      "costume": "empty",
+      "x": -150,
+      "y": 150,
+      "direction": 90,
+      "rotationStyle": "don't rotate",
+      "blocks": {
+        "BLOCK_A": {
+          "opcode": "event_whenthisspriteclicked",
+          "next": "BLOCK_B",
+          "parent": null,
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": true,
+          "x": 0,
+          "y": 0
+        },
+        "BLOCK_B": {
+          "opcode": "pen_setPenColorToColor",
+          "next": null,
+          "parent": "BLOCK_A",
+          "inputs": {
+            "COLOR": [9, "#0000ff"]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        }
+      }
+    },
+    {
+      "name": "Clear Button",
+      "costume": "empty",
+      "x": 0,
+      "y": 150,
+      "direction": 90,
+      "rotationStyle": "don't rotate",
+      "blocks": {
+        "BLOCK_A": {
+          "opcode": "event_whenthisspriteclicked",
+          "next": "BLOCK_B",
+          "parent": null,
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": true,
+          "x": 0,
+          "y": 0
+        },
+        "BLOCK_B": {
+          "opcode": "pen_clear",
+          "next": null,
+          "parent": "BLOCK_A",
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        }
+      }
+    }
+  ]
+}

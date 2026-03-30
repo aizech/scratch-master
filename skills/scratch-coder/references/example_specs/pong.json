@@ -1,0 +1,168 @@
+{
+  "name": "Pong Game",
+  "description": "Classic Pong game with two paddles, ball, and scoring.",
+  "extensions": [],
+  "stage": {
+    "variables": {
+      "`jEk@4|i[#Fk?(8x)AV.-score1": ["Player 1 Score", 0],
+      "`jEk@4|i[#Fk?(8x)AV.-score2": ["Player 2 Score", 0]
+    },
+    "broadcasts": {
+      "`jEk@4|i[#Fk?(8x)AV.-start": "start",
+      "`jEk@4|i[#Fk?(8x)AV.-score": "score",
+      "`jEk@4|i[#Fk?(8x)AV.-hit": "hit"
+    }
+  },
+  "sprites": [
+    {
+      "name": "Ball",
+      "costume": "tennis",
+      "x": 0,
+      "y": 0,
+      "direction": 90,
+      "rotationStyle": "all around",
+      "blocks": {
+        "BLOCK_A": {
+          "opcode": "event_whenflagclicked",
+          "next": "BLOCK_B",
+          "parent": null,
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": true,
+          "x": 0,
+          "y": 0
+        },
+        "BLOCK_B": {
+          "opcode": "motion_gotoxy",
+          "next": "BLOCK_C",
+          "parent": "BLOCK_A",
+          "inputs": {
+            "X": [4, 0],
+            "Y": [4, 0]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "BLOCK_C": {
+          "opcode": "motion_pointindirection",
+          "next": "BLOCK_D",
+          "parent": "BLOCK_B",
+          "inputs": {
+            "DIRECTION": [4, 45]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "BLOCK_D": {
+          "opcode": "control_forever",
+          "next": null,
+          "parent": "BLOCK_C",
+          "inputs": {
+            "SUBSTACK": [2, "BLOCK_E"]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "BLOCK_E": {
+          "opcode": "motion_movesteps",
+          "next": "BLOCK_F",
+          "parent": "BLOCK_D",
+          "inputs": {
+            "STEPS": [4, 5]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "BLOCK_F": {
+          "opcode": "motion_ifonedgebounce",
+          "next": null,
+          "parent": "BLOCK_E",
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        }
+      }
+    },
+    {
+      "name": "Paddle1",
+      "costume": "empty",
+      "x": -220,
+      "y": 0,
+      "direction": 90,
+      "rotationStyle": "don't rotate",
+      "blocks": {
+        "BLOCK_A": {
+          "opcode": "event_whenflagclicked",
+          "next": "BLOCK_B",
+          "parent": null,
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": true,
+          "x": 0,
+          "y": 0
+        },
+        "BLOCK_B": {
+          "opcode": "control_forever",
+          "next": null,
+          "parent": "BLOCK_A",
+          "inputs": {
+            "SUBSTACK": [2, "BLOCK_C"]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "BLOCK_C": {
+          "opcode": "control_if",
+          "next": null,
+          "parent": "BLOCK_B",
+          "inputs": {
+            "CONDITION": [2, "BLOCK_D"],
+            "SUBSTACK": [2, "BLOCK_E"]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        "BLOCK_D": {
+          "opcode": "sensing_keypressed",
+          "next": null,
+          "parent": "BLOCK_C",
+          "inputs": {},
+          "fields": {
+            "KEY_OPTION": ["up arrow", null]
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        "BLOCK_E": {
+          "opcode": "motion_changeyby",
+          "next": null,
+          "parent": "BLOCK_C",
+          "inputs": {
+            "DY": [4, 10]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        }
+      }
+    },
+    {
+      "name": "Paddle2",
+      "costume": "empty",
+      "x": 220,
+      "y": 0,
+      "direction": 90,
+      "rotationStyle": "don't rotate",
+      "blocks": {}
+    }
+  ]
+}

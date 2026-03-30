@@ -1,0 +1,89 @@
+{
+  "skill_name": "scratch-coder",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create a simple platformer game with 3 levels",
+      "expected_output": "A Scratch platformer game with player movement, platforms to jump on, and 3 distinct levels",
+      "files": ["output/platformer.sb3"],
+      "expectations": [
+        "The project contains a player sprite with movement controls",
+        "The project includes variables for score or lives",
+        "The project has at least 2 sprites (player and platform/obstacle)",
+        "The project uses motion blocks (move, turn, or go to)",
+        "The project uses control blocks (forever, if, or repeat)",
+        "The .sb3 file is created in the output directory"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Build a Pong game with two paddles and a ball",
+      "expected_output": "A classic Pong game with two paddles, a bouncing ball, and scoring",
+      "files": ["output/pong.sb3"],
+      "expectations": [
+        "The project has at least 3 sprites (ball and 2 paddles)",
+        "The ball has movement scripts using motion blocks",
+        "The project includes variables for scoring",
+        "The paddles respond to key presses",
+        "The ball bounces when hitting edges",
+        "The .sb3 file is created in the output directory"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Make an animation of a cat dancing with music",
+      "expected_output": "An animated Scratch project showing a cat with costume-switching dance moves",
+      "files": ["output/cat_dance.sb3"],
+      "expectations": [
+        "The project uses the cat sprite with multiple costumes",
+        "The animation uses costume switching blocks",
+        "The animation uses motion blocks (turn, move, or glide)",
+        "The project uses timing blocks (wait)",
+        "The animation runs when the green flag is clicked",
+        "The .sb3 file is created in the output directory"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Create a drawing program where you can change colors and clear the screen",
+      "expected_output": "An interactive drawing program with pen tools and color selection buttons",
+      "files": ["output/drawing_program.sb3"],
+      "expectations": [
+        "The project uses the pen extension (pen down/up, clear)",
+        "The project has multiple button sprites for color selection",
+        "The drawing responds to mouse movement",
+        "There's a clear/erase button",
+        "Buttons respond to click events",
+        "The .sb3 file is created in the output directory"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Build a quiz game with 5 questions about general knowledge",
+      "expected_output": "An interactive quiz game that asks questions and tracks correct answers",
+      "files": ["output/quiz_game.sb3"],
+      "expectations": [
+        "The project uses ask/answer blocks for user input",
+        "The project uses variables to track score",
+        "The project uses conditional logic (if) to check answers",
+        "The project uses broadcasting to communicate between sprites",
+        "The project has at least one sprite for the quiz host/character",
+        "The .sb3 file is created in the output directory"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Make a simple catch game where you catch falling objects",
+      "expected_output": "A game where a basket or character moves to catch falling objects while avoiding misses",
+      "files": ["output/catch_game.sb3"],
+      "expectations": [
+        "The player sprite moves with keyboard or mouse",
+        "Falling objects use motion blocks and loops",
+        "The project detects when objects are caught (touching)",
+        "The project includes a score variable",
+        "The game has a game over or restart condition",
+        "The .sb3 file is created in the output directory"
+      ]
+    }
+  ]
+}

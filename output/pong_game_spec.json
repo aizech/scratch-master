@@ -1,0 +1,285 @@
+{
+  "name": "Pong Game",
+  "description": "A classic Pong game with paddles and ball.",
+  "extensions": [],
+  "stage": {
+    "variables": {
+      "Player1Score": 0,
+      "Player2Score": 0
+    },
+    "broadcasts": {},
+    "backdrops": []
+  },
+  "sprites": [
+    {
+      "name": "Paddle1",
+      "costume": "tennis",
+      "x": -150,
+      "y": 0,
+      "blocks": {
+        "event_whenflagclicked": {
+          "opcode": "event_whenflagclicked",
+          "next": "control_forever",
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": true,
+          "x": -230,
+          "y": 0
+        },
+        "control_forever": {
+          "opcode": "control_forever",
+          "next": null,
+          "inputs": {
+            "SUBSTACK": [
+              2,
+              "motion_sety"
+            ]
+          }
+        },
+        "motion_sety": {
+          "opcode": "motion_sety",
+          "next": "control_if_key_up",
+          "inputs": {
+            "Y": [
+              3,
+              {
+                "shadow": true,
+                "value": {
+                  "opcode": "sensing_mousey"
+                }
+              }
+            ]
+          }
+        },
+        "control_if_key_up": {
+          "opcode": "control_if",
+          "next": "control_if_key_down",
+          "inputs": {
+            "CONDITION": [
+              2,
+              {
+                "opcode": "sensing_keypressed",
+                "inputs": {
+                  "KEY_OPTION": [
+                    1,
+                    [
+                      "up arrow",
+                      null
+                    ]
+                  ]
+                }
+              }
+            ],
+            "SUBSTACK": [
+              2,
+              {
+                "opcode": "motion_changeyby",
+                "inputs": {
+                  "DY": [
+                    1,
+                    "10"
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "control_if_key_down": {
+          "opcode": "control_if",
+          "next": null,
+          "inputs": {
+            "CONDITION": [
+              2,
+              {
+                "opcode": "sensing_keypressed",
+                "inputs": {
+                  "KEY_OPTION": [
+                    1,
+                    [
+                      "down arrow",
+                      null
+                    ]
+                  ]
+                }
+              }
+            ],
+            "SUBSTACK": [
+              2,
+              {
+                "opcode": "motion_changeyby",
+                "inputs": {
+                  "DY": [
+                    1,
+                    "-10"
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "Paddle2",
+      "costume": "tennis",
+      "x": 150,
+      "y": 0,
+      "blocks": {
+        "event_whenflagclicked": {
+          "opcode": "event_whenflagclicked",
+          "next": "control_forever",
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": true,
+          "x": 230,
+          "y": 0
+        },
+        "control_forever": {
+          "opcode": "control_forever",
+          "next": null,
+          "inputs": {
+            "SUBSTACK": [
+              2,
+              "motion_sety"
+            ]
+          }
+        },
+        "motion_sety": {
+          "opcode": "motion_sety",
+          "next": "control_if_key_w",
+          "inputs": {
+            "Y": [
+              3,
+              {
+                "shadow": true,
+                "value": {
+                  "opcode": "sensing_mousey"
+                }
+              }
+            ]
+          }
+        },
+        "control_if_key_w": {
+          "opcode": "control_if",
+          "next": "control_if_key_s",
+          "inputs": {
+            "CONDITION": [
+              2,
+              {
+                "opcode": "sensing_keypressed",
+                "inputs": {
+                  "KEY_OPTION": [
+                    1,
+                    [
+                      "w",
+                      null
+                    ]
+                  ]
+                }
+              }
+            ],
+            "SUBSTACK": [
+              2,
+              {
+                "opcode": "motion_changeyby",
+                "inputs": {
+                  "DY": [
+                    1,
+                    "10"
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "control_if_key_s": {
+          "opcode": "control_if",
+          "next": null,
+          "inputs": {
+            "CONDITION": [
+              2,
+              {
+                "opcode": "sensing_keypressed",
+                "inputs": {
+                  "KEY_OPTION": [
+                    1,
+                    [
+                      "s",
+                      null
+                    ]
+                  ]
+                }
+              }
+            ],
+            "SUBSTACK": [
+              2,
+              {
+                "opcode": "motion_changeyby",
+                "inputs": {
+                  "DY": [
+                    1,
+                    "-10"
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "Ball",
+      "costume": "tennis",
+      "x": 0,
+      "y": 0,
+      "blocks": {
+        "event_whenflagclicked": {
+          "opcode": "event_whenflagclicked",
+          "next": "control_forever",
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": true,
+          "x": 0,
+          "y": 0
+        },
+        "control_forever": {
+          "opcode": "control_forever",
+          "next": null,
+          "inputs": {
+            "SUBSTACK": [
+              2,
+              "motion_changexby"
+            ]
+          }
+        },
+        "motion_changexby": {
+          "opcode": "motion_changexby",
+          "next": "motion_changeyby",
+          "inputs": {
+            "DX": [
+              1,
+              "5"
+            ]
+          }
+        },
+        "motion_changeyby": {
+          "opcode": "motion_changeyby",
+          "next": "control_if_on_edge_bounce",
+          "inputs": {
+            "DY": [
+              1,
+              "5"
+            ]
+          }
+        },
+        "control_if_on_edge_bounce": {
+          "opcode": "motion_ifonedgebounce",
+          "next": null
+        }
+      }
+    }
+  ]
+}
