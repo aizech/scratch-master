@@ -370,7 +370,13 @@ def convert_blocks_from_agent_format(blocks_spec: dict) -> dict:
     # -----------------------------------------------------------------------
     _infer_parents(blocks)
 
-    return blocks
+    # -----------------------------------------------------------------------
+    # Phase 5: rename ALL block IDs to fresh UUIDs
+    # Human-readable IDs like "event_whenflagclicked" are re-used across every
+    # sprite.  Scratch.mit.edu indexes block IDs globally across all targets,
+    # so duplicate IDs cause the project to fail to load entirely.
+    # -----------------------------------------------------------------------
+    return _rename_ids_to_uuids(blocks)
 
 
 def _normalize_primitive_inputs(blocks: dict) -> None:
@@ -454,6 +460,50 @@ def _infer_parents(blocks: dict) -> None:
                 if isinstance(target, str) and target in blocks:
                     if blocks[target].get("parent") is None:
                         blocks[target]["parent"] = bid
+
+
+def _remap_input_ids(v, id_map: dict):
+    """Remap block ID references inside a single input value."""
+    if not isinstance(v, list) or len(v) < 2:
+        return v
+    kind = v[0]
+    inner = v[1]
+    if kind in (2, 3) and isinstance(inner, str) and inner in id_map:
+        new_inner = id_map[inner]
+        if kind == 3 and len(v) > 2:
+            return [3, new_inner, v[2]]
+        return [kind, new_inner]
+    return v
+
+
+def _rename_ids_to_uuids(blocks: dict) -> dict:
+    """Return a new blocks dict with every block ID replaced by a fresh UUID.
+
+    Also updates next/parent fields and all input block references so that
+    the internal graph stays consistent.  This prevents Scratch from
+    encountering duplicate human-readable IDs (e.g. 'event_whenflagclicked')
+    across different sprites which causes scratch.mit.edu to fail to load.
+    """
+    # Build old → new mapping
+    id_map = {bid: generate_id() for bid in blocks}
+
+    new_blocks: dict = {}
+    for old_id, block in blocks.items():
+        new_id = id_map[old_id]
+        b = dict(block)
+
+        # Remap next / parent
+        if b.get("next") in id_map:
+            b["next"] = id_map[b["next"]]
+        if b.get("parent") in id_map:
+            b["parent"] = id_map[b["parent"]]
+
+        # Remap inputs
+        b["inputs"] = {k: _remap_input_ids(v, id_map) for k, v in b.get("inputs", {}).items()}
+
+        new_blocks[new_id] = b
+
+    return new_blocks
 
 
 def _make_block_entry(block_def: dict) -> dict:

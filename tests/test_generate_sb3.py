@@ -117,7 +117,9 @@ class TestConvertBlocksFromAgentFormat:
             }
         }
         blocks = convert_blocks_from_agent_format(blocks_spec)
-        assert "BLOCK_A" in blocks
+        # Phase 5 renames all IDs to UUIDs — verify the block exists by opcode
+        opcodes = [b["opcode"] for b in blocks.values()]
+        assert "event_whenflagclicked" in opcodes
 
     def test_chain_linked(self):
         blocks_spec = {
