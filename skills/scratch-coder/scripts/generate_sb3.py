@@ -166,14 +166,22 @@ def _extract_inline_block(val: dict, blocks: dict, parent_id: str) -> str:
     inputs = {}
     for k, v in val.get("inputs", {}).items():
         inputs[k] = _resolve_input_value(v, blocks, bid)
-    fields = val.get("fields", {})
+    fields = dict(val.get("fields", {}))
+    # sensing_keypressed: KEY_OPTION must be a field not an input
+    if val.get("opcode") == "sensing_keypressed" and "KEY_OPTION" in inputs:
+        raw = inputs.pop("KEY_OPTION")
+        if isinstance(raw, list):
+            if len(raw) >= 2 and isinstance(raw[0], int):
+                v2 = raw[1] if isinstance(raw[1], list) else [raw[1], None]
+            else:
+                v2 = raw if len(raw) == 2 else [raw[0], None]
+            fields["KEY_OPTION"] = v2 if isinstance(v2, list) and len(v2) == 2 else [v2, None]
+        else:
+            fields["KEY_OPTION"] = [raw, None]
     # Normalise field values: Scratch expects [value, null] not just a scalar
     normalised_fields = {}
     for fname, fval in fields.items():
-        if isinstance(fval, list):
-            normalised_fields[fname] = fval
-        else:
-            normalised_fields[fname] = [fval, None]
+        normalised_fields[fname] = fval if isinstance(fval, list) else [fval, None]
     blocks[bid] = {
         "opcode": val.get("opcode", ""),
         "next": None,
@@ -350,7 +358,102 @@ def convert_blocks_from_agent_format(blocks_spec: dict) -> dict:
             new_fields[fname] = fval if isinstance(fval, list) else [fval, None]
         block["fields"] = new_fields
 
+    # -----------------------------------------------------------------------
+    # Phase 3: normalise primitive input literals
+    # [1, "10"] → [1, [4, "10"]]   (number stored as bare string)
+    # [4, 5]    → [1, [4, "5"]]    (old shorthand: primitive type used as shadow type)
+    # -----------------------------------------------------------------------
+    _normalize_primitive_inputs(blocks)
+
+    # -----------------------------------------------------------------------
+    # Phase 4: infer missing parent references from next/SUBSTACK/CONDITION
+    # -----------------------------------------------------------------------
+    _infer_parents(blocks)
+
     return blocks
+
+
+def _normalize_primitive_inputs(blocks: dict) -> None:
+    """Normalise all input literals to Scratch 3.0 canonical format in-place.
+
+    Scratch input format: [shadow_type, value_or_primitive]
+      shadow_type 1 = no shadow, 2 = block ref, 3 = obscured shadow
+      inner value for literals: [primitive_type, value_string]
+        4  = positive number, 5 = positive int, 6 = int, 7 = angle,
+        8  = color, 9 = str, 10 = str (TEXT), 12 = variable, 13 = list
+
+    Bad patterns we must fix:
+      [1, "10"]      → agent stored bare string/number as inner value
+      [4, 10]        → old shorthand (primitive type used as outer shadow type)
+    """
+    def _fix(v, block_ids: set):
+        if not isinstance(v, list) or len(v) < 2:
+            return v
+        kind = v[0]
+        inner = v[1]
+
+        # [2, id] or [3, id, shadow] — block references, leave as-is
+        if kind in (2, 3):
+            return v
+
+        # [1, [type, val]] — already canonical with a primitive array
+        if kind == 1 and isinstance(inner, list):
+            return v
+
+        # [1, block_id_str] — block reference with same-shadow, leave as-is
+        if kind == 1 and isinstance(inner, str) and inner in block_ids:
+            return v
+
+        # [1, bare_value] — string/number that isn't a block ID → wrap as literal
+        if kind == 1 and isinstance(inner, (str, int, float)):
+            s = str(inner)
+            try:
+                float(s)
+                ptype = 4  # number
+            except ValueError:
+                ptype = 10  # string
+            return [1, [ptype, s]]
+
+        # [4-13, value] — old shorthand (primitive type in outer shadow slot)
+        if isinstance(kind, int) and kind >= 4:
+            return [1, [kind, str(inner)]]
+
+        return v
+
+    block_ids = set(blocks.keys())
+    for block in blocks.values():
+        new_inputs = {}
+        for k, v in block.get("inputs", {}).items():
+            fixed = _fix(v, block_ids)
+            # For [3, block_id, shadow], also fix the shadow slot
+            if (isinstance(fixed, list) and len(fixed) == 3
+                    and fixed[0] == 3 and isinstance(fixed[2], list)):
+                shadow = fixed[2]
+                if (len(shadow) == 2 and isinstance(shadow[0], int)
+                        and shadow[0] >= 4 and not isinstance(shadow[1], list)):
+                    fixed = [3, fixed[1], [shadow[0], str(shadow[1])]]
+            new_inputs[k] = fixed
+        block["inputs"] = new_inputs
+
+
+def _infer_parents(blocks: dict) -> None:
+    """Infer missing parent references in-place from next/SUBSTACK/CONDITION links."""
+    for bid, block in blocks.items():
+        # next-chain: the block pointed to by 'next' has this block as its parent
+        nxt = block.get("next")
+        if nxt and nxt in blocks and blocks[nxt].get("parent") is None:
+            blocks[nxt]["parent"] = bid
+
+        # input substacks / conditions
+        for input_val in block.get("inputs", {}).values():
+            if not isinstance(input_val, list):
+                continue
+            # [2, target_id] or [3, target_id, ...]
+            if len(input_val) >= 2 and input_val[0] in (2, 3):
+                target = input_val[1]
+                if isinstance(target, str) and target in blocks:
+                    if blocks[target].get("parent") is None:
+                        blocks[target]["parent"] = bid
 
 
 def _make_block_entry(block_def: dict) -> dict:
@@ -409,7 +512,10 @@ def create_stage(spec: dict) -> dict:
 
     if "variables" in spec:
         for var_id, var_data in spec["variables"].items():
-            stage["variables"][var_id] = var_data
+            if isinstance(var_data, list) and len(var_data) == 2 and isinstance(var_data[0], str):
+                stage["variables"][var_id] = var_data  # already [name, value]
+            else:
+                stage["variables"][var_id] = [var_id, var_data]
 
     if "broadcasts" in spec:
         stage["broadcasts"] = spec["broadcasts"]
