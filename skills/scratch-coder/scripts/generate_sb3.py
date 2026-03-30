@@ -147,77 +147,243 @@ def resolve_backdrop(backdrop_spec: str | dict) -> dict:
     return blank
 
 
+_HAT_OPCODES = {
+    "event_whenflagclicked",
+    "event_whenkeypressed",
+    "event_whenthisspriteclicked",
+    "event_whenstageclicked",
+    "event_whenbackdropswitchesto",
+    "event_whengreaterthan",
+    "event_whenbroadcastreceived",
+    "control_start_as_clone",
+    "procedures_definition",
+}
+
+
+def _extract_inline_block(val: dict, blocks: dict, parent_id: str) -> str:
+    """Recursively extract an inline block dict to a top-level entry and return its ID."""
+    bid = generate_id()
+    inputs = {}
+    for k, v in val.get("inputs", {}).items():
+        inputs[k] = _resolve_input_value(v, blocks, bid)
+    fields = val.get("fields", {})
+    # Normalise field values: Scratch expects [value, null] not just a scalar
+    normalised_fields = {}
+    for fname, fval in fields.items():
+        if isinstance(fval, list):
+            normalised_fields[fname] = fval
+        else:
+            normalised_fields[fname] = [fval, None]
+    blocks[bid] = {
+        "opcode": val.get("opcode", ""),
+        "next": None,
+        "parent": parent_id,
+        "inputs": inputs,
+        "fields": normalised_fields,
+        "shadow": val.get("shadow", False),
+        "topLevel": False,
+    }
+    return bid
+
+
+def _resolve_input_value(raw, blocks: dict, parent_id: str):
+    """Convert a raw input value to a valid Scratch input tuple, extracting inline blocks."""
+    if not isinstance(raw, list):
+        return raw
+    if len(raw) < 2:
+        return raw
+    kind = raw[0]
+    inner = raw[1]
+
+    # Agent shadow pattern: [3, {"shadow": true, "value": {"opcode": "sensing_mousey"}}]
+    # Convert to proper [3, reporter_block_id, default_shadow]
+    if isinstance(inner, dict) and inner.get("shadow") is True and "value" in inner:
+        val = inner["value"]
+        if isinstance(val, dict) and "opcode" in val:
+            reporter_id = _extract_inline_block(val, blocks, parent_id)
+            # default numeric shadow for the second slot
+            return [3, reporter_id, [4, 0]]
+
+    # Inline block object — extract it
+    if isinstance(inner, dict) and "opcode" in inner:
+        new_id = _extract_inline_block(inner, blocks, parent_id)
+        return [kind, new_id]
+
+    # Shadow/obscured: [3, block_or_val, shadow] where slot 2 may also be an inline block
+    if kind == 3 and len(raw) > 2:
+        shadow = raw[2]
+        if isinstance(shadow, dict) and "opcode" in shadow:
+            shadow_id = _extract_inline_block(shadow, blocks, parent_id)
+            return [3, inner, shadow_id]
+
+    return raw
+
+
 def convert_blocks_from_agent_format(blocks_spec: dict) -> dict:
-    """Convert blocks from agent format to proper Scratch block format.
-    
-    Agent format (simple):
-        {"event_name": [{"opcode": "...", "inputs": {...}}]}
-    
-    Scratch format (proper):
-        {"BLOCK_ID": {"opcode": "...", "next": "BLOCK_ID2", ...}}
+    """Convert agent block specs to valid Scratch 3.0 block format.
+
+    Handles two agent output styles:
+
+    Style A — list format (auto-wraps with green-flag hat if needed):
+        {"script1": [{"opcode": "motion_movesteps", "inputs": {"STEPS": [4, 10]}}]}
+
+    Style B — dict format (string-keyed, passed through with normalisation):
+        {"HAT_ID": {"opcode": "event_whenflagclicked", "next": "BLOCK2", ...},
+         "BLOCK2": {"opcode": "motion_movesteps", ...}}
     """
-    blocks = {}
-    id_mapping = {}  # Maps names to block IDs
-    
-    for script_name, block_list in blocks_spec.items():
-        if not isinstance(block_list, list):
-            blocks[script_name] = block_list
-            continue
-        
-        prev_id = None
-        hat_id = None
-        
-        for i, block_def in enumerate(block_list):
-            if not isinstance(block_def, dict):
+    # -----------------------------------------------------------------------
+    # Phase 1: detect format and build initial blocks dict
+    # -----------------------------------------------------------------------
+    all_values = list(blocks_spec.values())
+    is_list_format = any(isinstance(v, list) for v in all_values)
+
+    blocks: dict = {}
+
+    if is_list_format:
+        # --- Style A: list-of-block-defs per script ---
+        script_y = 0
+        for script_name, block_list in blocks_spec.items():
+            if not isinstance(block_list, list) or not block_list:
+                if isinstance(block_list, dict):
+                    # mixed: single block dict under a name
+                    blocks[script_name] = _make_block_entry(block_list)
                 continue
-                
-            block_id = generate_id()
-            id_mapping[f"{script_name}_{i}"] = block_id
-            
-            block = {
-                "opcode": block_def.get("opcode", ""),
-                "next": None,
-                "parent": prev_id,
-                "inputs": block_def.get("inputs", {}).copy(),
-                "fields": block_def.get("fields", {}).copy(),
-                "shadow": block_def.get("shadow", False),
-                "topLevel": False,
-            }
-            
-            if i == 0:
+
+            ids = [generate_id() for _ in block_list]
+            first_opcode = block_list[0].get("opcode", "") if isinstance(block_list[0], dict) else ""
+            needs_hat = first_opcode not in _HAT_OPCODES
+
+            if needs_hat:
                 hat_id = generate_id()
                 blocks[hat_id] = {
                     "opcode": "event_whenflagclicked",
-                    "next": block_id,
+                    "next": ids[0],
                     "parent": None,
                     "inputs": {},
                     "fields": {},
                     "shadow": False,
                     "topLevel": True,
-                    "x": 0,
-                    "y": len([b for b in blocks.values() if b.get("topLevel")]) * 100,
+                    "x": 20,
+                    "y": script_y,
                 }
-                block["parent"] = hat_id
-            
-            if prev_id:
-                blocks[prev_id]["next"] = block_id
-            
-            blocks[block_id] = block
-            prev_id = block_id
-    
-    for block in blocks.values():
-        for input_name, input_val in block["inputs"].items():
-            if isinstance(input_val, list) and len(input_val) >= 2:
-                if input_val[0] == 2 and isinstance(input_val[1], str):
-                    for script_name, block_list in blocks_spec.items():
-                        if isinstance(block_list, list):
-                            for i, bd in enumerate(block_list):
-                                if isinstance(bd, dict):
-                                    ref_key = f"{script_name}_{i}"
-                                    if id_mapping.get(ref_key):
-                                        block["inputs"][input_name] = [2, id_mapping[ref_key]]
-    
+                script_y += 250
+                parent_of_first = hat_id
+            else:
+                parent_of_first = None
+
+            for i, block_def in enumerate(block_list):
+                if not isinstance(block_def, dict):
+                    continue
+                bid = ids[i]
+                # Use explicit 'next' string ref if it names a block outside this list
+                explicit_next = block_def.get("next")
+                if isinstance(explicit_next, str) and explicit_next not in ids:
+                    next_id = explicit_next  # cross-reference to a dict-keyed block
+                else:
+                    next_id = ids[i + 1] if i + 1 < len(ids) else None
+                parent_id = parent_of_first if i == 0 else ids[i - 1]
+
+                inputs = {}
+                for k, v in block_def.get("inputs", {}).items():
+                    inputs[k] = _resolve_input_value(v, blocks, bid)
+
+                fields = {}
+                for fname, fval in block_def.get("fields", {}).items():
+                    fields[fname] = fval if isinstance(fval, list) else [fval, None]
+
+                is_hat = block_def.get("opcode", "") in _HAT_OPCODES
+                blocks[bid] = {
+                    "opcode": block_def.get("opcode", ""),
+                    "next": next_id,
+                    "parent": parent_id,
+                    "inputs": inputs,
+                    "fields": fields,
+                    "shadow": block_def.get("shadow", False),
+                    "topLevel": is_hat and i == 0 and not needs_hat,
+                }
+                if is_hat and i == 0 and not needs_hat:
+                    blocks[bid]["x"] = 20
+                    blocks[bid]["y"] = script_y
+                    script_y += 250
+
+    else:
+        # --- Style B: dict-keyed blocks (string IDs), possibly mixed with list entries ---
+        # First pass: copy all blocks. List values are treated as sub-scripts.
+        script_y = 0
+        for bid, block_def in blocks_spec.items():
+            if isinstance(block_def, list):
+                # inline list sub-script — convert and merge
+                sub = convert_blocks_from_agent_format({bid: block_def})
+                blocks.update(sub)
+            elif isinstance(block_def, dict):
+                blocks[bid] = _make_block_entry(block_def)
+
+        # Second pass: fix topLevel, add x/y to hat blocks
+        for bid, block in blocks.items():
+            opcode = block.get("opcode", "")
+            parent = block.get("parent")
+            # A block is top-level if it's a hat AND has no parent (or parent not in blocks)
+            if opcode in _HAT_OPCODES and (not parent or parent not in blocks):
+                block["topLevel"] = True
+                block["parent"] = None
+                if "x" not in block:
+                    block["x"] = 20
+                if "y" not in block:
+                    block["y"] = script_y
+                script_y += 250
+            else:
+                block["topLevel"] = False
+
+    # -----------------------------------------------------------------------
+    # Phase 2: resolve remaining string-ID references in inputs
+    # (handles [2, "some_block_name"] where some_block_name is a key in blocks)
+    # -----------------------------------------------------------------------
+    for bid, block in list(blocks.items()):
+        new_inputs = {}
+        for k, v in block.get("inputs", {}).items():
+            new_inputs[k] = _resolve_input_value(v, blocks, bid)
+        block["inputs"] = new_inputs
+
+        # Normalise fields
+        new_fields = {}
+        for fname, fval in block.get("fields", {}).items():
+            new_fields[fname] = fval if isinstance(fval, list) else [fval, None]
+        block["fields"] = new_fields
+
     return blocks
+
+
+def _make_block_entry(block_def: dict) -> dict:
+    """Normalise a single block definition dict into a proper Scratch block entry."""
+    inputs = dict(block_def.get("inputs", {}))
+    fields = dict(block_def.get("fields", {}))
+
+    # sensing_keypressed: KEY_OPTION must be a field, not an input
+    # Agent sometimes puts it in inputs as ["space", null] or [1, ["space", null]]
+    if block_def.get("opcode") == "sensing_keypressed" and "KEY_OPTION" in inputs:
+        raw = inputs.pop("KEY_OPTION")
+        if isinstance(raw, list):
+            # ["space", null] or [1, ["space", null]] or ["space"]
+            val = raw
+            if len(raw) >= 2 and isinstance(raw[0], int):
+                val = raw[1] if isinstance(raw[1], list) else [raw[1], None]
+            if not isinstance(val, list):
+                val = [val, None]
+            if len(val) == 1:
+                val = [val[0], None]
+            fields["KEY_OPTION"] = val
+        else:
+            fields["KEY_OPTION"] = [raw, None]
+
+    return {
+        "opcode": block_def.get("opcode", ""),
+        "next": block_def.get("next", None),
+        "parent": block_def.get("parent", None),
+        "inputs": inputs,
+        "fields": fields,
+        "shadow": block_def.get("shadow", False),
+        "topLevel": block_def.get("topLevel", False),
+    }
 
 
 def create_stage(spec: dict) -> dict:
@@ -287,11 +453,9 @@ def create_sprite(
     """Create a sprite target."""
     costumes = BUILT_IN_COSTUMES.get(costume, BUILT_IN_COSTUMES["cat"])
 
-    sprite_blocks = blocks
+    sprite_blocks = {}
     if blocks and isinstance(blocks, dict):
-        has_string_keys = any(isinstance(k, str) and not k.startswith("_") for k in blocks.keys())
-        if has_string_keys and any(isinstance(v, list) for v in blocks.values()):
-            sprite_blocks = convert_blocks_from_agent_format(blocks)
+        sprite_blocks = convert_blocks_from_agent_format(blocks)
 
     sprite = {
         "isStage": False,
