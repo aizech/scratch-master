@@ -209,6 +209,94 @@ See `references/block_opcodes.md` for complete list of Scratch 3.0 blocks.
 }
 ```
 
+## Block Templates (Recommended)
+
+For complex game mechanics, use the pre-built templates in `scripts/templates.py` instead of hand-crafting block JSON. These provide validated, tested patterns.
+
+### Available Templates
+
+| Template | Purpose | Key Parameters |
+|----------|---------|----------------|
+| `PlatformerMovement` | Arrow key movement + jumping | `left_key`, `right_key`, `jump_key`, `move_speed` |
+| `PongPaddle` | Paddle controlled by keys or mouse | `up_key`, `down_key`, `use_mouse` |
+| `BouncingBall` | Ball that moves and bounces off edges | `speed` |
+| `ScoreCounter` | Stage script that responds to score broadcasts | `variable_name`, `increment` |
+| `CatchGameItem` | Falling item that resets when caught | `fall_speed` |
+| `CostumeAnimation` | Next costume with wait loop | `wait_seconds` |
+
+### Template Usage Example
+
+```python
+# In your spec generation, use templates for common patterns:
+from templates import PlatformerMovement, BouncingBall, ScoreCounter
+
+player_sprite = {
+    "name": "Player",
+    "costume": "cat",
+    "x": 0, "y": -100,
+    "blocks": PlatformerMovement(
+        left_key="left arrow",
+        right_key="right arrow",
+        jump_key="space",
+        move_speed=5,
+        jump_height=10
+    ).build()
+}
+
+ball_sprite = {
+    "name": "Ball",
+    "costume": "tennis",
+    "blocks": BouncingBall(speed=6).build()
+}
+
+stage = {
+    "variables": {"Score": ["Score", 0]},
+    "blocks": ScoreCounter(variable_name="Score", increment=1).build()
+}
+```
+
+### Input Builder
+
+Use `InputBuilder` for canonical Scratch input formats:
+
+```python
+from templates import InputBuilder
+
+# Number literal: [1, [4, "10"]]
+InputBuilder.number(10)
+
+# String literal: [1, [10, "hello"]]
+InputBuilder.string("hello")
+
+# Block reference: [2, block_id]
+InputBuilder.block_ref(some_block_id)
+
+# Obscured shadow: [3, block_id, [4, "0"]]
+InputBuilder.obscured_shadow(reporter_id, 0)
+```
+
+## Spec Validation
+
+Before generating, validate your spec to catch errors early:
+
+```bash
+python skills/scratch-coder/scripts/generate_sb3.py my_spec.json --validate
+```
+
+Or use the strict mode to fail on errors:
+
+```bash
+python skills/scratch-coder/scripts/generate_sb3.py my_spec.json --validate --strict
+```
+
+Common issues caught:
+- Unknown opcodes
+- Invalid input formats (e.g., `[4, 10]` instead of `[1,[4,"10"]]`)
+- Missing hat blocks (scripts that won't run)
+- Duplicate sprite names
+- Unknown costume names
+- Malformed variables
+
 ## Output Format
 
 Always save output files to the `output/` directory with `.sb3` extension.

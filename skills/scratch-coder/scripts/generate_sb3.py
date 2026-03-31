@@ -780,6 +780,12 @@ def main():
     parser.add_argument(
         "--overwrite", action="store_true", help="Overwrite existing file"
     )
+    parser.add_argument(
+        "--validate", action="store_true", help="Validate spec before generation (warns on issues)"
+    )
+    parser.add_argument(
+        "--strict", action="store_true", help="Fail on validation errors (requires --validate)"
+    )
 
     args = parser.parse_args()
 
@@ -789,6 +795,23 @@ def main():
         sys.exit(1)
 
     spec = json.loads(spec_path.read_text())
+
+    # Validation step
+    if args.validate or args.strict:
+        try:
+            from spec_validator import validate_spec, format_validation_report
+            result = validate_spec(spec)
+            print(format_validation_report(result))
+            
+            if args.strict and result.has_errors:
+                print("\n❌ Validation failed (strict mode). Fix errors before generating.", file=sys.stderr)
+                sys.exit(1)
+            
+            # Use corrected spec
+            spec = result.corrected_spec
+            
+        except ImportError:
+            print("Warning: spec_validator not available, skipping validation", file=sys.stderr)
 
     if args.output:
         output_path = Path(args.output)

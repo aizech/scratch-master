@@ -18,6 +18,8 @@ from tools.scratch_tools import (
     save_spec,
     inspect_sb3,
     load_sb3_project,
+    get_block_help,
+    validate_spec_tool,
 )
 
 load_dotenv()
@@ -50,13 +52,18 @@ agent = Agent(
         save_spec,
         inspect_sb3,
         load_sb3_project,
+        get_block_help,
+        validate_spec_tool,
     ],
     instructions=[
         "Use the scratch-coder skill when users want to CREATE new Scratch games or animations.",
         "Use the scratch-editor skill when users want to EDIT or MODIFY existing Scratch projects.",
         "To list existing projects use list_projects(). To inspect an .sb3 use inspect_sb3(). To load a spec use load_spec().",
+        "Use get_block_help('motion') or get_block_help('events') when unsure of correct block opcodes.",
+        "Use validate_spec_tool() to check specs for errors before generating the .sb3 file.",
         "After writing the spec JSON file, use run_bash to run: python skills/scratch-coder/scripts/generate_sb3.py output/<name>_spec.json --output output/<name>.sb3",
         "To overwrite an existing .sb3 add --overwrite: python skills/scratch-coder/scripts/generate_sb3.py output/<name>_spec.json --output output/<name>.sb3 --overwrite",
+        "For validation before generation, use: python skills/scratch-coder/scripts/generate_sb3.py output/<name>_spec.json --validate --output output/<name>.sb3",
         "Save all output to the 'output/' directory.",
         "NEVER use the 'empty' costume for visible sprites - it is literally invisible! Use 'cat', 'tennis', 'banana', or 'basketball' instead.",
         "Always confirm the .sb3 file was created and tell the user its location.",
