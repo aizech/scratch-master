@@ -5,10 +5,12 @@
   "stage": {
     "variables": {},
     "broadcasts": {},
-    "backdrops": [{
-      "name": "Backdrop1",
-      "costume": "backdrop1"
-    }]
+    "backdrops": [
+      {
+        "name": "Backdrop1",
+        "costume": "backdrop1"
+      }
+    ]
   },
   "sprites": [
     {
@@ -26,66 +28,114 @@
         "foreverLoop": {
           "opcode": "control_forever",
           "inputs": {
-            "SUBSTACK": [2, "checkKeys"]
+            "SUBSTACK": [
+              2,
+              "checkKeys"
+            ]
           }
         },
         "checkKeys": {
           "opcode": "control_if",
           "inputs": {
-            "CONDITION": [2, "keyRightArrow"],
-            "SUBSTACK": [2, "moveRight"]
+            "CONDITION": [
+              2,
+              "keyRightArrow"
+            ],
+            "SUBSTACK": [
+              2,
+              "moveRight"
+            ]
           },
           "next": "checkLeft"
         },
         "checkLeft": {
           "opcode": "control_if",
           "inputs": {
-            "CONDITION": [2, "keyLeftArrow"],
-            "SUBSTACK": [2, "moveLeft"]
+            "CONDITION": [
+              2,
+              "keyLeftArrow"
+            ],
+            "SUBSTACK": [
+              2,
+              "moveLeft"
+            ]
           },
           "next": "checkJump"
         },
         "checkJump": {
           "opcode": "control_if",
           "inputs": {
-            "CONDITION": [2, "keySpace"],
-            "SUBSTACK": [2, "jump"]
+            "CONDITION": [
+              2,
+              "keySpace"
+            ],
+            "SUBSTACK": [
+              2,
+              "jump"
+            ]
           }
         },
         "keyRightArrow": {
           "opcode": "sensing_keypressed",
           "inputs": {
-            "KEY_OPTION": ["right arrow", null]
+            "KEY_OPTION": [
+              "right arrow",
+              null
+            ]
           }
         },
         "keyLeftArrow": {
           "opcode": "sensing_keypressed",
           "inputs": {
-            "KEY_OPTION": ["left arrow", null]
+            "KEY_OPTION": [
+              "left arrow",
+              null
+            ]
           }
         },
         "keySpace": {
           "opcode": "sensing_keypressed",
           "inputs": {
-            "KEY_OPTION": ["space", null]
+            "KEY_OPTION": [
+              "space",
+              null
+            ]
           }
         },
         "moveRight": {
           "opcode": "motion_changexby",
           "inputs": {
-            "DX": [1, "10"]
+            "DX": [
+              1,
+              [
+                4,
+                "10"
+              ]
+            ]
           }
         },
         "moveLeft": {
           "opcode": "motion_changexby",
           "inputs": {
-            "DX": [1, "-10"]
+            "DX": [
+              1,
+              [
+                4,
+                "-10"
+              ]
+            ]
           }
         },
         "jump": {
           "opcode": "motion_changeyby",
           "inputs": {
-            "DY": [1, "50"]
+            "DY": [
+              1,
+              [
+                4,
+                "50"
+              ]
+            ]
           }
         }
       }

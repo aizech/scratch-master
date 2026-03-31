@@ -1,0 +1,292 @@
+{
+  "name": "Quiz Game",
+  "description": "A quiz game with 5 questions",
+  "extensions": [],
+  "stage": {
+    "variables": {
+      "Score": ["Score", 0]
+    },
+    "broadcasts": {
+      "Next Question": "Next Question"
+    },
+    "backdrops": []
+  },
+  "sprites": [
+    {
+      "name": "QuizMaster",
+      "costume": "cat",
+      "x": 0,
+      "y": 0,
+      "blocks": [
+        {
+          "opcode": "event_whenflagclicked",
+          "next": "initialize_score",
+          "parent": null,
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": true,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "opcode": "data_setvariableto",
+          "next": "ask_question_1",
+          "parent": "initialize_score",
+          "inputs": {
+            "VALUE": [1, [4, "0"]]
+          },
+          "fields": {
+            "VARIABLE": "Score"
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        {
+          "opcode": "sensing_askandwait",
+          "next": "check_answer_1",
+          "parent": "ask_question_1",
+          "inputs": {
+            "QUESTION": [1, [10, "What is the capital of France?"]]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        {
+          "opcode": "control_if",
+          "next": "broadcast_next_question",
+          "parent": "check_answer_1",
+          "inputs": {
+            "CONDITION": [2, "answer_1_correct"],
+            "SUBSTACK": [2, "increase_score"]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        {
+          "opcode": "operator_equals",
+          "next": null,
+          "parent": "answer_1_correct",
+          "inputs": {
+            "OPERAND1": [2, "sensing_answer"],
+            "OPERAND2": [1, [10, "Paris"]]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        {
+          "opcode": "data_changevariableby",
+          "next": null,
+          "parent": "increase_score",
+          "inputs": {
+            "VALUE": [1, [4, "1"]]
+          },
+          "fields": {
+            "VARIABLE": "Score"
+          },
+          "shadow": false,
+          "topLevel": false
+        },
+        {
+          "opcode": "event_broadcast",
+          "next": "ask_question_2",
+          "parent": "broadcast_next_question",
+          "inputs": {
+            "BROADCAST_INPUT": [1, "Next Question"]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        {
+          "opcode": "sensing_askandwait",
+          "next": "check_answer_2",
+          "parent": "ask_question_2",
+          "inputs": {
+            "QUESTION": [1, [10, "What is 5 + 3?"]]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        {
+          "opcode": "control_if",
+          "next": "broadcast_next_question",
+          "parent": "check_answer_2",
+          "inputs": {
+            "CONDITION": [2, "answer_2_correct"],
+            "SUBSTACK": [2, "increase_score"]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        {
+          "opcode": "operator_equals",
+          "next": null,
+          "parent": "answer_2_correct",
+          "inputs": {
+            "OPERAND1": [2, "sensing_answer"],
+            "OPERAND2": [1, [10, "8"]]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        {
+          "opcode": "event_broadcast",
+          "next": "ask_question_3",
+          "parent": "broadcast_next_question",
+          "inputs": {
+            "BROADCAST_INPUT": [1, "Next Question"]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        {
+          "opcode": "sensing_askandwait",
+          "next": "check_answer_3",
+          "parent": "ask_question_3",
+          "inputs": {
+            "QUESTION": [1, [10, "What color is the sky?"]]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        {
+          "opcode": "control_if",
+          "next": "broadcast_next_question",
+          "parent": "check_answer_3",
+          "inputs": {
+            "CONDITION": [2, "answer_3_correct"],
+            "SUBSTACK": [2, "increase_score"]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        {
+          "opcode": "operator_equals",
+          "next": null,
+          "parent": "answer_3_correct",
+          "inputs": {
+            "OPERAND1": [2, "sensing_answer"],
+            "OPERAND2": [1, [10, "blue"]]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        {
+          "opcode": "event_broadcast",
+          "next": "ask_question_4",
+          "parent": "broadcast_next_question",
+          "inputs": {
+            "BROADCAST_INPUT": [1, "Next Question"]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        {
+          "opcode": "sensing_askandwait",
+          "next": "check_answer_4",
+          "parent": "ask_question_4",
+          "inputs": {
+            "QUESTION": [1, [10, "Which animal says 'meow'?"]]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        {
+          "opcode": "control_if",
+          "next": "broadcast_next_question",
+          "parent": "check_answer_4",
+          "inputs": {
+            "CONDITION": [2, "answer_4_correct"],
+            "SUBSTACK": [2, "increase_score"]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        {
+          "opcode": "operator_equals",
+          "next": null,
+          "parent": "answer_4_correct",
+          "inputs": {
+            "OPERAND1": [2, "sensing_answer"],
+            "OPERAND2": [1, [10, "cat"]]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        {
+          "opcode": "event_broadcast",
+          "next": "ask_question_5",
+          "parent": "broadcast_next_question",
+          "inputs": {
+            "BROADCAST_INPUT": [1, "Next Question"]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        {
+          "opcode": "sensing_askandwait",
+          "next": "check_answer_5",
+          "parent": "ask_question_5",
+          "inputs": {
+            "QUESTION": [1, [10, "What is the largest planet in our Solar System?"]]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        {
+          "opcode": "control_if",
+          "next": "end_game",
+          "parent": "check_answer_5",
+          "inputs": {
+            "CONDITION": [2, "answer_5_correct"],
+            "SUBSTACK": [2, "increase_score"]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        {
+          "opcode": "operator_equals",
+          "next": null,
+          "parent": "answer_5_correct",
+          "inputs": {
+            "OPERAND1": [2, "sensing_answer"],
+            "OPERAND2": [1, [10, "Jupiter"]]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        },
+        {
+          "opcode": "looks_sayforsecs",
+          "next": null,
+          "parent": "end_game",
+          "inputs": {
+            "MESSAGE": [1, [10, "Quiz complete! Your score: ", "Score"]],
+            "SECS": [1, [4, "2"]]
+          },
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
+        }
+      ]
+    }
+  ]
+}

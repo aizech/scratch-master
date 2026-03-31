@@ -1,14 +1,22 @@
 {
   "name": "Pong Game",
-  "description": "A classic Pong game with paddles and ball.",
+  "description": "A simple Pong game with two paddles and a bouncing ball.",
   "extensions": [],
   "stage": {
     "variables": {
-      "Player1Score": 0,
-      "Player2Score": 0
+      "Player 1 Score": [
+        "Player 1 Score",
+        0
+      ],
+      "Player 2 Score": [
+        "Player 2 Score",
+        0
+      ]
     },
     "broadcasts": {},
-    "backdrops": []
+    "backdrops": [
+      "xy-grid"
+    ]
   },
   "sprites": [
     {
@@ -17,106 +25,55 @@
       "x": -150,
       "y": 0,
       "blocks": {
-        "event_whenflagclicked": {
+        "whenGreenFlagClicked": {
           "opcode": "event_whenflagclicked",
-          "next": "control_forever",
+          "next": "foreverMove",
+          "parent": null,
           "inputs": {},
           "fields": {},
           "shadow": false,
           "topLevel": true,
-          "x": -230,
-          "y": 0
+          "x": 180,
+          "y": 140
         },
-        "control_forever": {
+        "foreverMove": {
           "opcode": "control_forever",
           "next": null,
+          "parent": "whenGreenFlagClicked",
           "inputs": {
             "SUBSTACK": [
               2,
-              "motion_sety"
+              "setY"
             ]
-          }
+          },
+          "fields": {},
+          "shadow": false
         },
-        "motion_sety": {
+        "setY": {
           "opcode": "motion_sety",
-          "next": "control_if_key_up",
+          "next": null,
+          "parent": "foreverMove",
           "inputs": {
             "Y": [
               3,
-              {
-                "shadow": true,
-                "value": {
-                  "opcode": "sensing_mousey"
-                }
-              }
+              "mouseY",
+              [
+                4,
+                "0"
+              ]
             ]
-          }
+          },
+          "fields": {},
+          "shadow": false
         },
-        "control_if_key_up": {
-          "opcode": "control_if",
-          "next": "control_if_key_down",
-          "inputs": {
-            "CONDITION": [
-              2,
-              {
-                "opcode": "sensing_keypressed",
-                "inputs": {
-                  "KEY_OPTION": [
-                    1,
-                    [
-                      "up arrow",
-                      null
-                    ]
-                  ]
-                }
-              }
-            ],
-            "SUBSTACK": [
-              2,
-              {
-                "opcode": "motion_changeyby",
-                "inputs": {
-                  "DY": [
-                    1,
-                    "10"
-                  ]
-                }
-              }
-            ]
-          }
-        },
-        "control_if_key_down": {
-          "opcode": "control_if",
+        "mouseY": {
+          "opcode": "sensing_mousey",
           "next": null,
-          "inputs": {
-            "CONDITION": [
-              2,
-              {
-                "opcode": "sensing_keypressed",
-                "inputs": {
-                  "KEY_OPTION": [
-                    1,
-                    [
-                      "down arrow",
-                      null
-                    ]
-                  ]
-                }
-              }
-            ],
-            "SUBSTACK": [
-              2,
-              {
-                "opcode": "motion_changeyby",
-                "inputs": {
-                  "DY": [
-                    1,
-                    "-10"
-                  ]
-                }
-              }
-            ]
-          }
+          "parent": null,
+          "inputs": {},
+          "fields": {},
+          "shadow": false,
+          "topLevel": false
         }
       }
     },
@@ -126,106 +83,121 @@
       "x": 150,
       "y": 0,
       "blocks": {
-        "event_whenflagclicked": {
+        "whenGreenFlagClicked": {
           "opcode": "event_whenflagclicked",
-          "next": "control_forever",
+          "next": "foreverMove2",
+          "parent": null,
           "inputs": {},
           "fields": {},
           "shadow": false,
           "topLevel": true,
-          "x": 230,
-          "y": 0
+          "x": 200,
+          "y": 140
         },
-        "control_forever": {
+        "foreverMove2": {
           "opcode": "control_forever",
           "next": null,
+          "parent": "whenGreenFlagClicked",
           "inputs": {
             "SUBSTACK": [
               2,
-              "motion_sety"
+              "upKeyCheck"
             ]
-          }
+          },
+          "fields": {},
+          "shadow": false
         },
-        "motion_sety": {
-          "opcode": "motion_sety",
-          "next": "control_if_key_w",
-          "inputs": {
-            "Y": [
-              3,
-              {
-                "shadow": true,
-                "value": {
-                  "opcode": "sensing_mousey"
-                }
-              }
-            ]
-          }
-        },
-        "control_if_key_w": {
+        "upKeyCheck": {
           "opcode": "control_if",
-          "next": "control_if_key_s",
+          "next": "downKeyCheck",
+          "parent": "foreverMove2",
           "inputs": {
             "CONDITION": [
               2,
-              {
-                "opcode": "sensing_keypressed",
-                "inputs": {
-                  "KEY_OPTION": [
-                    1,
-                    [
-                      "w",
-                      null
-                    ]
-                  ]
-                }
-              }
+              "upPressed"
             ],
             "SUBSTACK": [
               2,
-              {
-                "opcode": "motion_changeyby",
-                "inputs": {
-                  "DY": [
-                    1,
-                    "10"
-                  ]
-                }
-              }
+              "moveUp"
             ]
-          }
+          },
+          "fields": {},
+          "shadow": false
         },
-        "control_if_key_s": {
+        "upPressed": {
+          "opcode": "sensing_keypressed",
+          "next": null,
+          "parent": null,
+          "inputs": {},
+          "fields": {
+            "KEY_OPTION": [
+              "up arrow",
+              null
+            ]
+          },
+          "shadow": false
+        },
+        "moveUp": {
+          "opcode": "motion_changeyby",
+          "next": null,
+          "parent": null,
+          "inputs": {
+            "DY": [
+              1,
+              [
+                4,
+                "10"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false
+        },
+        "downKeyCheck": {
           "opcode": "control_if",
           "next": null,
+          "parent": "upKeyCheck",
           "inputs": {
             "CONDITION": [
               2,
-              {
-                "opcode": "sensing_keypressed",
-                "inputs": {
-                  "KEY_OPTION": [
-                    1,
-                    [
-                      "s",
-                      null
-                    ]
-                  ]
-                }
-              }
+              "downPressed"
             ],
             "SUBSTACK": [
               2,
-              {
-                "opcode": "motion_changeyby",
-                "inputs": {
-                  "DY": [
-                    1,
-                    "-10"
-                  ]
-                }
-              }
+              "moveDown"
             ]
-          }
+          },
+          "fields": {},
+          "shadow": false
+        },
+        "downPressed": {
+          "opcode": "sensing_keypressed",
+          "next": null,
+          "parent": null,
+          "inputs": {},
+          "fields": {
+            "KEY_OPTION": [
+              "down arrow",
+              null
+            ]
+          },
+          "shadow": false
+        },
+        "moveDown": {
+          "opcode": "motion_changeyby",
+          "next": null,
+          "parent": null,
+          "inputs": {
+            "DY": [
+              1,
+              [
+                4,
+                "-10"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false
         }
       }
     },
@@ -235,49 +207,116 @@
       "x": 0,
       "y": 0,
       "blocks": {
-        "event_whenflagclicked": {
+        "whenGreenFlagClicked": {
           "opcode": "event_whenflagclicked",
-          "next": "control_forever",
+          "next": "goToStart",
+          "parent": null,
           "inputs": {},
           "fields": {},
           "shadow": false,
           "topLevel": true,
-          "x": 0,
-          "y": 0
+          "x": 230,
+          "y": 140
         },
-        "control_forever": {
+        "goToStart": {
+          "opcode": "motion_gotoxy",
+          "next": "pointRandom",
+          "parent": "whenGreenFlagClicked",
+          "inputs": {
+            "X": [
+              1,
+              [
+                4,
+                "0"
+              ]
+            ],
+            "Y": [
+              1,
+              [
+                4,
+                "0"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false
+        },
+        "pointRandom": {
+          "opcode": "motion_pointindirection",
+          "next": "foreverBall",
+          "parent": "goToStart",
+          "inputs": {
+            "DIRECTION": [
+              3,
+              "randomDir",
+              [
+                4,
+                "45"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false
+        },
+        "randomDir": {
+          "opcode": "operator_random",
+          "next": null,
+          "parent": null,
+          "inputs": {
+            "FROM": [
+              1,
+              [
+                4,
+                "-45"
+              ]
+            ],
+            "TO": [
+              1,
+              [
+                4,
+                "45"
+              ]
+            ]
+          },
+          "fields": {},
+          "shadow": false
+        },
+        "foreverBall": {
           "opcode": "control_forever",
           "next": null,
+          "parent": "pointRandom",
           "inputs": {
             "SUBSTACK": [
               2,
-              "motion_changexby"
+              "moveBall"
             ]
-          }
+          },
+          "fields": {},
+          "shadow": false
         },
-        "motion_changexby": {
-          "opcode": "motion_changexby",
-          "next": "motion_changeyby",
+        "moveBall": {
+          "opcode": "motion_movesteps",
+          "next": "bounce",
+          "parent": "foreverBall",
           "inputs": {
-            "DX": [
+            "STEPS": [
               1,
-              "5"
+              [
+                4,
+                "5"
+              ]
             ]
-          }
+          },
+          "fields": {},
+          "shadow": false
         },
-        "motion_changeyby": {
-          "opcode": "motion_changeyby",
-          "next": "control_if_on_edge_bounce",
-          "inputs": {
-            "DY": [
-              1,
-              "5"
-            ]
-          }
-        },
-        "control_if_on_edge_bounce": {
+        "bounce": {
           "opcode": "motion_ifonedgebounce",
-          "next": null
+          "next": null,
+          "parent": "moveBall",
+          "inputs": {},
+          "fields": {},
+          "shadow": false
         }
       }
     }

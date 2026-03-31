@@ -391,7 +391,19 @@ def _normalize_primitive_inputs(blocks: dict) -> None:
     Bad patterns we must fix:
       [1, "10"]      → agent stored bare string/number as inner value
       [4, 10]        → old shorthand (primitive type used as outer shadow type)
+      [4, [1, "..."]] → agent nested block ref format inside shorthand
     """
+    def _is_block_ref_format(v):
+        """Check if value looks like a Scratch block reference format."""
+        if not isinstance(v, list) or len(v) < 2:
+            return False
+        if not isinstance(v[0], int):
+            return False
+        # [1, ...], [2, id], [3, id, shadow] are block ref formats
+        if v[0] in (1, 2, 3):
+            return True
+        return False
+
     def _fix(v, block_ids: set):
         if not isinstance(v, list) or len(v) < 2:
             return v
@@ -422,6 +434,13 @@ def _normalize_primitive_inputs(blocks: dict) -> None:
 
         # [4-13, value] — old shorthand (primitive type in outer shadow slot)
         if isinstance(kind, int) and kind >= 4:
+            # Special case: inner is a list that looks like block ref format
+            # e.g., [4, [1, "(mouse y)"]] - treat as [1, inner] with recursion
+            if _is_block_ref_format(inner):
+                # Recursively fix the inner format and wrap with shadow_type 1
+                fixed_inner = _fix(inner, block_ids)
+                return [1, fixed_inner]
+            # Normal case: wrap primitive value
             return [1, [kind, str(inner)]]
 
         return v
